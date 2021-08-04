@@ -26,7 +26,7 @@ vector<Process>& System::Processes() {
         Process process(pid);
         if (process.Command().length() >1 && process.CpuUtilization() > 0.0 && process.Ram().length()>1)
         {
-            processes_.push_back(process);
+            processes_.emplace_back(process);
         }   
         
     }

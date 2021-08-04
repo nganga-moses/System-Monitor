@@ -57,7 +57,7 @@ vector<int> LinuxParser::Pids() {
       string filename(file->d_name);
       if (std::all_of(filename.begin(), filename.end(), isdigit)) {
         int pid = stoi(filename);
-        pids.push_back(pid);
+        pids.emplace_back(pid);
       }
     }
   }
@@ -122,7 +122,7 @@ long LinuxParser::ActiveJiffies(int pid) {
     std::getline(filestream, line);
     std::istringstream linestream(line);
     while(linestream >> value){
-      cpu.push_back(value);
+      cpu.emplace_back(value);
     }
     
   }
@@ -185,16 +185,7 @@ vector<string> LinuxParser::CpuUtilization() {
       std::istringstream linestream(line);
       linestream >> key >> value0 >> value1 >> value2 >> value3 >> value4 >> value5 >> value6 >> value7 >> value8 >> value9;
       if (key=="cpu"){
-        cpu.push_back(value0);
-        cpu.push_back(value1);
-        cpu.push_back(value2);
-        cpu.push_back(value3);
-        cpu.push_back(value4);
-        cpu.push_back(value5);
-        cpu.push_back(value6);
-        cpu.push_back(value7);
-        cpu.push_back(value8);
-        cpu.push_back(value9);
+        cpu = {value0, value1 ,value2 , value3 , value4 , value5 , value6 , value7 , value8 , value9};
         return cpu;
       }
      
@@ -270,8 +261,11 @@ string LinuxParser::Ram(int pid) {
     {
       std::istringstream linestream(line);
       linestream >> key >> size;
-
-      if(key=="VmSize:"){
+      /*
+      * The Course recommends using VmSize here but according to http://man7.org/linux/man-pages/man5/proc.5.html
+      * this is the Virtual Memory size which is more than the actual memory while what we want is the Physical memory(VmRSS)
+      */
+      if(key=="VmRSS:"){
         return std::to_string(stoi(size)/1024);
       }
     }
@@ -328,17 +322,24 @@ long LinuxParser::UpTime(int pid) {
     std::getline(filestream, line);
     std::istringstream linestream(line);
     while(linestream >> value){
-      cpu.push_back(value);
+      cpu.emplace_back(value);
     }
     
   }
   
   auto starttimel=stol(cpu[21]);
 
-  auto hertz = sysconf(_SC_CLK_TCK);
-  auto seconds = starttimel/hertz;
+  //Linux Kernel 2.6 and lower store starttime as jiffies while newer versions use clockticks
+  if (stof(Kernel())< 2.6)
+  {
+    return UpTime()-starttimel;
+
+  }else{
   
-  return seconds; 
+  auto hertz = sysconf(_SC_CLK_TCK);
+  return UpTime()-starttimel/hertz;
+  }
+  return 0; 
 
  }
 
@@ -351,7 +352,7 @@ float LinuxParser::CpuUtilization(int pid) {
     std::getline(filestream, line);
     std::istringstream linestream(line);
     while(linestream >> value){
-      cpu.push_back(value);
+      cpu.emplace_back(value);
     }
     
   }

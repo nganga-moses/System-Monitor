@@ -18,21 +18,10 @@ string Format::ElapsedTime(long seconds)
     mins=minutes%60;
     secs=seconds%60;
 
-    if(hours<10){
-        hrs="0"+std::to_string(hours);
-    }else{
-        hrs=std::to_string(hours);
-    }
-    if(mins<10){
-        min="0"+std::to_string(mins);
-    }else{
-        min=std::to_string(mins);
-    }
-    if(secs<10){
-        sec="0"+std::to_string(secs);
-    }else{
-        sec=std::to_string(secs);
-    }
+    hrs = hours<10 ? "0" + std::to_string(hours) : std::to_string(hours);
+    min = mins<10 ? "0" + std::to_string(mins) : std::to_string(mins);
+    sec = secs<10 ? "0" + std::to_string(secs) : std::to_string(secs);
+    
     return hrs+":"+min+":"+sec; 
 
 }

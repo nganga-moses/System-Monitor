@@ -30,7 +30,9 @@ float Process::CpuUtilization() {
 }
 
 string Process::Command() { 
-    return this->command; 
+     std::string cmd =this->command;
+     //limit the string for nice display purposes 
+     return cmd.substr(0,40)+"...";
 }
 
 string Process::Ram() { 
